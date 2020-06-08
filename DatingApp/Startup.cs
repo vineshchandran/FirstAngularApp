@@ -13,10 +13,13 @@ namespace DatingApp
 {
     public class Startup
     {
+        #region Contrsuctor
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
+        #endregion
+
 
         public IConfiguration Configuration { get; }
 
@@ -36,7 +39,7 @@ namespace DatingApp
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSection("AppSettings:Token").Value)),
                         ValidateIssuer = false,
-                        ValidateAudience  = false
+                        ValidateAudience = false
                     };
                 });
 
@@ -53,9 +56,6 @@ namespace DatingApp
             //app.UseHttpsRedirection();
 
             app.UseRouting();
-
-          
-           
             app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseAuthentication();
             app.UseAuthorization();
@@ -63,7 +63,7 @@ namespace DatingApp
             {
                 endpoints.MapControllers();
             });
-           
+
         }
     }
 }
