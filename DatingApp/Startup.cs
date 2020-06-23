@@ -28,6 +28,7 @@ namespace DatingApp
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
+        // Dependency Injection..
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDataContext>(x => x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
@@ -50,6 +51,7 @@ namespace DatingApp
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        // Create a middleware pipeline with IApplicationBuilder
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -66,9 +68,8 @@ namespace DatingApp
                     var error = context.Features.Get<IExceptionHandlerFeature>();
                     if (error != null)
                     {
-                        context.Response.AddApplicationError(error.Error.Message);// called the helper created as extension method..
+                        context.Response.AddApplicationError(error.Error.Message);// Called the helper created as extension method..
                         await context.Response.WriteAsync(error.Error.Message);
-
                     }
                 });
                                    
