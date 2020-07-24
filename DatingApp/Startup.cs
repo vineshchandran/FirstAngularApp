@@ -1,3 +1,4 @@
+using AutoMapper;
 using DatingApp.Data;
 using DatingApp.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -5,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,9 +34,15 @@ namespace DatingApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDataContext>(x => x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson(opt =>
+            {
+                opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+
+            });
             services.AddCors();
+            services.AddAutoMapper(typeof(DatingRepository).Assembly);
             services.AddScoped<IAuthRepository, AuthRepository>();
+            services.AddScoped<IDatingRepository, DatingRepository>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -62,23 +70,25 @@ namespace DatingApp
             // For handling Exception globally, rather than using try catch...
             else
             {
-                app.UseExceptionHandler(builder => {builder.Run(async context =>
+                app.UseExceptionHandler(builder =>
                 {
-                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    var error = context.Features.Get<IExceptionHandlerFeature>();
-                    if (error != null)
-                    {
-                        context.Response.AddApplicationError(error.Error.Message);// Called the helper created as extension method..
-                        await context.Response.WriteAsync(error.Error.Message);
-                    }
+                    builder.Run(async context =>
+{
+    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+    var error = context.Features.Get<IExceptionHandlerFeature>();
+    if (error != null)
+    {
+        context.Response.AddApplicationError(error.Error.Message);// Called the helper created as extension method..
+        await context.Response.WriteAsync(error.Error.Message);
+    }
+});
+
                 });
-                                   
-            });
-        }
+            }
 
-        //app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
-        app.UseRouting();
+            app.UseRouting();
             app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseAuthentication();
             app.UseAuthorization();
